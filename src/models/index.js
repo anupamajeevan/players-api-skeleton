@@ -41,19 +41,19 @@ module.exports = {
         first_name: player.first_name,
         last_name: player.last_name,
         rating: player.rating,
-        handedness: player.handedness
+        handedness: player.handedness,
+        created_by: player.created_by
       };
 
       return new Promise(function(resolve, reject) {
         pool.connect(function(err, client, done) {
           var myClient = client;
-          var insert = `INSERT INTO players (first_name, last_name, rating, handedness) VALUES('${newPlayer.first_name}','${newPlayer.last_name}','${newPlayer.rating}','${newPlayer.handedness}')`;
+          var insert = `INSERT INTO players (first_name, last_name, rating, handedness, created_by) VALUES('${newPlayer.first_name}','${newPlayer.last_name}','${newPlayer.rating}','${newPlayer.handedness}','${newPlayer.created_by}')`;
           myClient.query(insert)
             .then(function() {
               resolve(newPlayer);
             })
             .catch(function(err) {
-              console.log('inside');
               err = new Error('false');
               reject(err);
             });
@@ -65,6 +65,14 @@ module.exports = {
       let newPlayer = {};
       return new Promise(function(resolve, reject) {
         resolve(newPlayer);
+      });
+    },
+
+    findById: function(id) {
+      pool.connect(function(err, client, done) {
+        var myClient = client;
+        var select = `SELECT * FROM players WHERE ID=${id}`;
+        return myClient.query(select);
       });
     }
   }

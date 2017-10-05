@@ -107,7 +107,6 @@ router.post('/login', function(req, res, next) {
         if (data.rows[0].password === req.body.password) {
           const user = data.rows[0];
           token = jwt.sign({user}, 'secret_key');
-          console.log(token);
           res.status(200).json({
             success: true,
             user: user,
@@ -138,6 +137,7 @@ router.post('/players', ensureToken, function(req, res, next) {
         success: err.message
       });
     } else {
+      let userEmail = data.user.email;
       pool.connect(function(err, client, done) {
         if (err) return next(err);
         let keys = ['first_name', 'last_name', 'rating', 'handedness'];
@@ -150,7 +150,7 @@ router.post('/players', ensureToken, function(req, res, next) {
         }
         if (flag) {
           var myClient = client;
-          var insert = `INSERT INTO players (first_name, last_name, rating, handedness) VALUES('${req.body.first_name}','${req.body.last_name}','${req.body.rating}','${req.body.handedness}')`;
+          var insert = `INSERT INTO players (first_name, last_name, rating, handedness, created_by) VALUES('${req.body.first_name}','${req.body.last_name}','${req.body.rating}','${req.body.handedness}','${userEmail}')`;
           myClient.query(insert)
             .then(function() {
               res.status(201).json({
@@ -189,6 +189,73 @@ function ensureToken(req, res, next) {
     });
   }
 }
+
+router.get('/players', ensureToken, function(req, res, next) {
+  jwt.verify(req.token, 'secret_key', function(err, data) {
+    if (err) {
+      err = new Error('false');
+      res.status(403).json({
+        success: err.message
+      });
+    } else {
+      let userEmail = data.user.email;
+      pool.connect(function(err, client, done) {
+        if (err) return next(err);
+        var myClient = client;
+        var select = `SELECT * FROM players WHERE CREATED_BY='${userEmail}'`;
+        myClient.query(select)
+          .then(function(data) {
+            res.status(200).json({
+              success: true,
+              players: data.rows
+            });
+          })
+          .catch(function(err) {
+            err = new Error('false');
+            res.status(409).json({
+              success: err.message
+            });
+          });
+      });
+    }
+  });
+});
+
+router.delete('/players/:id', ensureToken, function(req, res, next) {
+  jwt.verify(req.token, 'secret_key', function(err, data) {
+    if (err) {
+      err = new Error('false');
+      res.status(403).json({
+        success: err.message
+      });
+    } else {
+      let userEmail = data.user.email;
+      let id = req.params.id;
+      pool.connect(function(err, client, done) {
+        if (err) return next(err);
+        var myClient = client;
+        var select = `DELETE FROM players WHERE ID=${id} AND CREATED_BY='${userEmail}'`;
+        myClient.query(select)
+          .then(function(data) {
+            if (data.rowCount === 0) {
+              err = new Error('false');
+              throw err;
+            }
+            res.status(200).json({
+              success: true
+            });
+          })
+          .catch(function(err) {
+            err = new Error('false');
+            res.status(404).json({
+              success: err.message
+            });
+          });
+      });
+    }
+  });
+});
+
 // let pl = { first_name: 'Ma', last_name: 'Long', rating: 9000, handedness: 'right'};
 // Player.create(pl)
 //   .then(function(v) {

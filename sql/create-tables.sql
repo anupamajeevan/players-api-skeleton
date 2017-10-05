@@ -12,5 +12,6 @@ CREATE TABLE players (
   first_name varchar(60) not null unique,
   last_name varchar(60) not null,
   rating numeric not null check (rating > 0),
-  handedness varchar(10) check (handedness in ('right','left'))
+  handedness varchar(10) check (handedness in ('right','left')),
+  created_by varchar(60)
 );
