@@ -1,13 +1,12 @@
 // TODO
 const express = require('express');
 const pg = require('pg');
-const path = require('path');
 const bodyParser = require('body-parser');
-const connectionString = 'anupama://localhost:5432/test';
+//const connectionString = 'anupama://localhost:5432/test';
 const app = express();
 const jwt = require('jsonwebtoken');
 
-const {User, Player} = require('./models');
+const { User } = require('./models');
 const port = 3000;
 let token;
 var config = {
@@ -255,17 +254,6 @@ router.delete('/players/:id', ensureToken, function(req, res, next) {
     }
   });
 });
-
-// let pl = { first_name: 'Ma', last_name: 'Long', rating: 9000, handedness: 'right'};
-// Player.create(pl)
-//   .then(function(v) {
-//     console.log(v);
-//   })
-//   .catch(function(err) {
-//     console.log(err);
-//   });
-
-
 
 app.listen(port, () => {
   console.log('Server started http://localhost:%s', port);

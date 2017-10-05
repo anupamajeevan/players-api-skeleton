@@ -35,6 +35,9 @@ module.exports = {
     }
 
   },
+
+  /****************************** PLAYER ************************************/
+
   Player: {
     create: function(player) {
       let newPlayer = {

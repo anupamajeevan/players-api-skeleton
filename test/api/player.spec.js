@@ -85,9 +85,9 @@ describe('Player API', () => {
   });
 
   describe('GET /api/players', () => {
-    // beforeEach(async () => {
-    //   await Player.remove({});
-    // });
+    beforeEach(async () => {
+      await Player.remove({});
+    });
 
     it('should fail if token not provided', done => {
       chai.request(server)
