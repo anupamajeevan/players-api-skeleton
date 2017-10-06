@@ -22,7 +22,7 @@ const router = express.Router();
 
 //knex
 
-const knex = require('../database/knex');
+const knex = require('../src/database/knex');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true}));
@@ -45,25 +45,6 @@ router.get('/users', function(req, res, next) {
         success: err.message
       });
     });
-  // pool.connect(function(err, client, done) {
-  //   if (err) return next(err);
-  //   var myClient = client;
-  //   var selectAll = 'SELECT * FROM users';
-  //   myClient.query(selectAll)
-  //     .then(function(data) {
-  //       res.status(201).json({
-  //         success: true,
-  //         users: data.rows
-  //       });
-  //     })
-  //     .catch(function(err) {
-  //       err = new Error('false');
-  //       res.status(409).json({
-  //         success: err.message
-  //       });
-  //     });
-  // });
-  //pool.end();
 });
 
 // router.post('/user', function(req, res, next) {
