@@ -1,13 +1,4 @@
-const pg = require('pg');
-
-var config = {
-  user: 'anupama',
-  database: 'test',
-  max: 10,
-  idleTimeoutMillis: 3000
-};
-
-var pool = new pg.Pool(config);
+const knex = require('../database/knex');
 
 module.exports = {
 
@@ -15,68 +6,73 @@ module.exports = {
 
   User: {
 
-    create: function(user) {
-      let newUser = {
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email
-      };
-
-      return new Promise(function(resolve, reject) {
-        resolve(newUser);
-      });
+    validate: function(user) {
+      let keys = ['first_name', 'last_name', 'email', 'password', 'confirm_password'];
+      let flag = true;
+      for (let key of keys) {
+        if (!user.hasOwnProperty(key)) {
+          flag = false;
+          break;
+        }
+      }
+      return flag && user.password === user.confirm_password;
     },
 
-    remove: function() {
-      let newUser = {};
-      return new Promise(function(resolve, reject) {
-        resolve(newUser);
-      });
-    }
+    create: function(user) {
+      if (this.validate(user)) {
+        let newUser = {
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          password: user.password,
+          confirm_password: user.confirm_password
+        };
+        return knex('users')
+          .insert(newUser)
+          .returning(['id', 'first_name', 'last_name', 'email']);
+      }
+    },
 
+    remove: function(user) {
+      return knex('users').del();
+    }
   },
 
   /****************************** PLAYER ************************************/
 
   Player: {
-    create: function(player) {
-      let newPlayer = {
-        first_name: player.first_name,
-        last_name: player.last_name,
-        rating: player.rating,
-        handedness: player.handedness,
-        created_by: player.created_by
-      };
 
-      return new Promise(function(resolve, reject) {
-        pool.connect(function(err, client, done) {
-          var myClient = client;
-          var insert = `INSERT INTO players (first_name, last_name, rating, handedness, created_by) VALUES('${newPlayer.first_name}','${newPlayer.last_name}','${newPlayer.rating}','${newPlayer.handedness}','${newPlayer.created_by}')`;
-          myClient.query(insert)
-            .then(function() {
-              resolve(newPlayer);
-            })
-            .catch(function(err) {
-              err = new Error('false');
-              reject(err);
-            });
-        });
-      });
+    validate: function(player) {
+      let keys = ['first_name', 'last_name', 'rating', 'handedness'];
+      let flag = true;
+      for (let key of keys) {
+        if (!player.hasOwnProperty(key)) {
+          flag = false;
+          break;
+        }
+      }
+      return flag;
     },
 
-    remove: function() {
-      let newPlayer = {};
-      return new Promise(function(resolve, reject) {
-        resolve(newPlayer);
-      });
+    create: function(player) {
+      if (this.validate(player)) {
+        let newPlayer = {
+          first_name: player.first_name,
+          last_name: player.last_name,
+          rating: player.rating,
+          handedness: player.handedness,
+          created_by: player.created_by
+        };
+        return knex('players').returning(['id', 'first_name', 'last_name']).insert(newPlayer);
+      }
+    },
+
+    remove: function(player) {
+      return knex('players').del();
     },
 
     findById: function(id) {
-      pool.connect(function(err, client, done) {
-        var myClient = client;
-        var select = `SELECT * FROM players WHERE ID=${id}`;
-        return myClient.query(select);
-      });
+      return knex('players').where({id: id}).select();
     }
   }
 };
