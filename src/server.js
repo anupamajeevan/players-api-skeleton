@@ -1,8 +1,6 @@
 // TODO
 const express = require('express');
-const pg = require('pg');
 const bodyParser = require('body-parser');
-//const connectionString = 'anupama://localhost:5432/test';
 const app = express();
 const jwt = require('jsonwebtoken');
 
@@ -218,8 +216,6 @@ router.delete('/players/:id', ensureToken, function(req, res, next) {
   });
 });
 
-Player.create({first_name: 'Anu', last_name: 'Jee', rating: 1, handedness: 'left', created_by: 76});
-//console.log(t);
 app.listen(port, () => {
   console.log('Server started http://localhost:%s', port);
 });

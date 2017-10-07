@@ -63,7 +63,7 @@ module.exports = {
           handedness: player.handedness,
           created_by: player.created_by
         };
-        return knex('players').returning(['id', 'first_name', 'last_name']).insert(newPlayer);
+        return knex('players').returning(['id', 'first_name', 'last_name', 'rating', 'handedness']).insert(newPlayer);
       }
     },
 
