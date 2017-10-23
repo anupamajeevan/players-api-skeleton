@@ -14,8 +14,8 @@ describe('Player API', () => {
       .send(data.user);
     token = res.body.token;
     user = res.body.user;
-    data.player.created_by = user.email;
-    data.player2.created_by = user.email;
+    data.player.created_by = user.id;
+    data.player2.created_by = user.id;
   });
 
   describe('POST /api/players', () => {
@@ -48,6 +48,23 @@ describe('Player API', () => {
       });
     });
 
+    it('should fail if player with same name exists', done => {
+      Player.create(data.player)
+        .then(() => {
+          chai.request(server)
+            .post('/api/players')
+            .send(data.player)
+            .set('Authorization', `Bearer ${ token }`)
+            .end(err => {
+              expect(err).to.exist;
+              expect(err.status).to.equal(409);
+              done();
+            });
+        })
+        .catch(err => {
+          throw err;
+        });
+    });
 
     it('should deliver player if successful', done => {
       chai.request(server)
@@ -63,26 +80,8 @@ describe('Player API', () => {
           done();
         });
     });
-
-    it('should fail if player with same name exists', done => {
-      Player.create(data.player)
-        .then(() => {
-          chai.request(server)
-            .post('/api/players')
-            .send(data.player)
-            .set('Authorization', `Bearer ${ token }`)
-            .end(err => {
-              expect(err).to.exist;
-              expect(err.status).to.equal(409);
-              done();
-            });
-        })
-        .catch(err => {
-          done();
-          throw err;
-        });
-    });
   });
+
 
   describe('GET /api/players', () => {
     beforeEach(async () => {
@@ -146,7 +145,7 @@ describe('Player API', () => {
         .send(Object.assign({}, data.user, { email: 'seconduser@foo.com' }));
 
       await Player.create(data.player);
-      await Player.create(Object.assign({}, data.player2, { created_by: userRes.body.user.email }));
+      await Player.create(Object.assign({}, data.player2, { created_by: userRes.body.user.id }));
 
       let res, error;
       try {
@@ -203,7 +202,7 @@ describe('Player API', () => {
         .post('/api/user')
         .send(Object.assign({}, data.user, { email: '__deletetest__@foo.com' }));
 
-      let player = await Player.create(Object.assign({}, data.player, { created_by: userRes.body.user.email }));
+      let player = await Player.create(Object.assign({}, data.player, { created_by: userRes.body.user.id }));
 
       let res, error;
       try {
@@ -220,7 +219,7 @@ describe('Player API', () => {
 
     it('should remove the player if successful', async () => {
       let player = await Player.create(data.player);
-      //player.id = 18;
+      player = player[0];
       let res, error;
       try {
         res = await chai.request(server)
@@ -234,6 +233,7 @@ describe('Player API', () => {
       expect(res.status).to.equal(200);
 
       player = await Player.findById(player.id);
+      player = player[0];
       expect(player).not.to.exist;
     });
   });
